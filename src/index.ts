@@ -45,12 +45,21 @@ export class Item {
     sellIn: number;
     quality: number;
     size?: boolean;
-    
 
     constructor(name: string, sellIn: number, quality: number) {
         this.name = name;
         this.sellIn = sellIn;
         this.quality = quality;
+    }
+
+    setQuality(value: number){
+        let updateValue = value < 0 ? 0 : value;
+        updateValue = value > 25 ? 25 : updateValue;
+        this.quality = updateValue;
+    }
+
+    setSellIn(value: number){
+        this.sellIn = value;
     }
 }
 
@@ -61,13 +70,48 @@ export class StoreInventory {
         this.items = items;
     }
 
-    updateQuality() {
+    discountBothValues(item: Item){
+        item.setQuality(item.quality - 1);
+        item.setSellIn(item.sellIn - 1);
+    }
+
+    discountSellDatePassed(item: Item){
+        item.setQuality(item.quality - 2);
+    }
+
+    chedarCheese(item: Item){
+        item.setQuality(item.quality + 1)
+    }
+
+
+
+    updateQuality(){ 
+        const exceptions = ["Instant Ramen"];
+        for (let i = 0; i < this.items.length; i++) {
+            const sellDatePassed = this.items[i].sellIn <= 0;
+            const isAnException = exceptions.includes(this.items[i].name)
+            if(isAnException){
+                continue;
+            }
+            if(this.items[i].name === "Cheddar Cheese"){
+                this.chedarCheese(this.items[i]);
+            }else{
+                if(sellDatePassed){
+                    this.discountSellDatePassed(this.items[i]);
+                }else{
+                    this.discountBothValues(this.items[i]);
+                }
+            }
+        }
+    }
+
+    updateQualityOld() {
         for (let i = 0; i < this.items.length; i++) {
             if (this.items[i].name != 'Cheddar Cheese') {
               // if (this.items[i].sellIn < 3) { # Summer sale promotion
               //     this.items[i].onSale = true;
               // }
-              if (this.items[i].quality > 0) {
+              if (this.items[i].quality > 0 && this.items[i].sellIn > 0) {
                     if (this.items[i].name != 'Instant Ramen') {
                         this.items[i].quality = this.items[i].quality - 1;
                     }
@@ -85,7 +129,11 @@ export class StoreInventory {
             }
             if (this.items[i].sellIn < 0) {
                 if (this.items[i].name != 'Cheddar Cheese') {
-                    this.items[i].quality = this.items[i].quality - this.items[i].quality
+                    if(this.items[i].quality >= 2){
+                        this.items[i].quality = this.items[i].quality - 2;
+                    }else if(this.items[i].quality > 0){
+                        this.items[i].quality = this.items[i].quality - 1;
+                    }
                 } else {
                     if (this.items[i].quality < 50) {
                         this.items[i].quality = this.items[i].quality + 1
@@ -104,13 +152,13 @@ export class StoreInventory {
 
 
 let items = [
-    new Item("Apple", 10, 10),
+    // new Item("Apple", 0, 10),
     //new Item("Banana", 2, 10),
     //new Item("Strawberry", 5, 10),
     new Item("Cheddar Cheese", 10, 20),
-    new Item("Instant Ramen", 0, 5),
+    // new Item("Instant Ramen", 0, 5),
     // this Organic item does not work properly yet
-    new Item("Organic Avocado", 20, 20)
+    // new Item("Organic Avocado", 20, 20)
 ];
 
 
